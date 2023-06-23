@@ -1,0 +1,69 @@
+
+role role_KGC(KGC:agent,Va:agent,Vb:agent,SND,RCV:channel(dy))
+played_by KGC
+def=
+	local
+		State:nat,G:text,Tag:text,ADj:text
+	init
+		State := 0
+	transition
+		1. State=0 /\ RCV(start) =|> State':=1 /\ Tag':=new() /\ G':=new() /\ SND(KGC.exp(G',Tag')) /\ ADj':=new() /\ SND(KGC.Va.ADj'.Tag')
+end role
+
+role role_Va(KGC:agent,Va:agent,Vb:agent,Timestamp:text,Ka:text,W:text,SND,RCV:channel(dy))
+played_by Va
+def=
+	local
+		State:nat,OBU:agent,H2:hash_func,Tag:text,H1:hash_func,ADj:text,G:text,M:text,H3:hash_func
+	init
+		State := 0
+	transition
+		3. State=0 /\ RCV(OBU'.Va.exp(G',Ka).H1(Va.exp(exp(G',Tag'),Ka)).H2(Ka.exp(G',Ka).Timestamp).Timestamp) =|> State':=1 /\ ADj':=new() /\ M':=new() /\ SND(Va.M'.exp(G',Ka).H1(Va.exp(exp(G',Tag'),Ka).ADj').H3(exp(G',W).M'.ADj'.Va.Timestamp).ADj'.exp(G',W).H2(exp(G',Ka).Timestamp).exp(H3(exp(G',W).M'.ADj'.Va.Timestamp),W).Timestamp)
+end role
+
+role role_Vb(KGC:agent,Va:agent,Vb:agent,SND,RCV:channel(dy))
+played_by Vb
+def=
+	local
+		State:nat,Timestamp:text,Ka:text,H2:hash_func,Tag:text,H1:hash_func,ADj:text,G:text,M:text,H3:hash_func,W:text
+	init
+		State := 0
+	transition
+		1. State=0 /\ RCV(KGC.exp(G',Tag')) =|> State':=1
+		4. State=1 /\ RCV(Va.M'.exp(G,Ka').H1(Va.exp(exp(G,Tag),Ka').ADj').H3(exp(G,W').M'.ADj'.Va.Timestamp').ADj'.exp(G,W').H2(exp(G,Ka').Timestamp').exp(H3(exp(G,W').M'.ADj'.Va.Timestamp'),W').Timestamp') =|> State':=2 /\ witness(Vb,Va,auth_2,Timestamp')
+end role
+
+role role_OBU(OBU:agent,KGC:agent,Va:agent,Vb:agent,Timestamp:text,Ka:text,W:text,SND,RCV:channel(dy))
+played_by OBU
+def=
+	local
+		State:nat,ADj:text,Tag:text,H1:hash_func,H2:hash_func,G:text
+	init
+		State := 0
+	transition
+		2. State=0 /\ RCV(KGC.Va.ADj'.Tag') =|> State':=1 /\ G':=new() /\ SND(OBU.Va.exp(G',Ka).H1(Va.exp(exp(G',Tag'),Ka)).H2(Ka.exp(G',Ka).Timestamp).Timestamp)
+end role
+
+role session1(OBU:agent,KGC:agent,Va:agent,Vb:agent,Timestamp:text,Ka:text,W:text)
+def=
+	local
+		SND4,RCV4,SND3,RCV3,SND2,RCV2,SND1,RCV1:channel(dy)
+	composition
+		role_OBU(OBU,KGC,Va,Vb,Timestamp,Ka,W,SND4,RCV4) /\ role_Vb(KGC,Va,Vb,SND3,RCV3) /\ role_Va(KGC,Va,Vb,Timestamp,Ka,W,SND2,RCV2) /\ role_KGC(KGC,Va,Vb,SND1,RCV1)
+end role
+
+role environment()
+def=
+	const
+		hash_0:hash_func,va:agent,obu:agent,kgc:agent,vb:agent,const_1:text,const_1:text,const_1:text,auth_1:protocol_id,auth_2:protocol_id
+	intruder_knowledge = {kgc,va,vb}
+	composition
+		session1(obu,kgc,va,vb,const_1,const_1,const_1)
+end role
+
+goal
+	authentication_on auth_1
+	authentication_on auth_2
+end goal
+
+environment()
