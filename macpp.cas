@@ -8,8 +8,8 @@ H1, H2, H3	: function;
 messages
 1. KGC -> Vb : KGC, G^Tag
 2. KGC -> OBU :  KGC, Va, ADj, Tag
-3. OBU -> Va : OBU, Va, G^Ka, H1(Va, G^Tag^Ka), H2(Ka, G^Ka,Timestamp), Timestamp
-4. Va -> Vb :  Va, M, G^Ka, H1(Va, G^Tag^Ka, ADj), H3(G^W, M, ADj, Va, Timestamp), ADj, G^W, H2(G^Ka,Timestamp),H3(G^W, M, ADj, Va, Timestamp)^W,Timestamp 
+3. OBU -> Va : OBU, Va, G^Ka, Va#H1(G^Tag^Ka)#ADj, H3(G^W, M, ADj, Va, Timestamp), Timestamp
+4. Va -> Vb :  Va, M, G^Ka, Va#H1(G^Tag^Ka)#ADj, H3(G^W, M, ADj, Va, Timestamp), ADj, G^W, Ka#H2(G^Ka,Timestamp)^Tag#H3(G^W, M, ADj, G^Ka, Va#H1(G^Tag^Ka)#ADj, H3(G^W, M, ADj, Va, Timestamp), Timestamp)^W,Timestamp 
 
 knowledge
 Va	: KGC, Va, Vb, Timestamp, Ka, W;        
@@ -28,4 +28,5 @@ intruder_knowledge
 
 goal
    Vb authenticates Va on W;
-   Vb authenticates Va on Timestamp;
+   Vb authenticates Va on Ka;
+   Vb authenticates Va on Tag;   
